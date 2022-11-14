@@ -26,7 +26,7 @@ const PEOPLE = [
   "Andrew",
   "Ollie",
   "Jeet",
-  "Matthew",
+  // "Matthew",
   "Nick",
   "Mihai",
 ];
