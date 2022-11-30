@@ -22,7 +22,7 @@ const PEOPLE = [
   "Tom P",
   "Tom Z",
   "Tom S",
-  // "Rafael",
+  "Rafael",
   "Andrew",
   "Ollie",
   "Jeet",
