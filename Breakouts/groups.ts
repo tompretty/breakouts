@@ -10,7 +10,7 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 function batch<T>(array: T[]): T[][] {
-  const batches = [];
+  const batches: T[][] = [];
 
 	array.slice(0, -1).forEach((x, index) => {
 		if (index % 2 === 0) {
