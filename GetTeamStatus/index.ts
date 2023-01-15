@@ -1,7 +1,7 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { TeamStatusService } from "./statusService/types";
-import { storageAccountTeamStatusService } from "./statusService/storageAccount";
-import { inMemoryTeamStatusService } from "./statusService/inMemory";
+import { inMemoryTeamStatusService } from "../shared/statusService/inMemory";
+import { storageAccountTeamStatusService } from "../shared/statusService/storageAccount";
+import { TeamStatusService } from "../shared/statusService/types";
 
 let statusService: TeamStatusService | null = null;
 

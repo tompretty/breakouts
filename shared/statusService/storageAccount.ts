@@ -1,6 +1,6 @@
 import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient } from "@azure/storage-blob";
-import { z } from "zod";
+import { teamStatusSchema } from "../models/teamStatus";
 import { GetStatus, TeamStatusService } from "./types";
 
 export function storageAccountTeamStatusService(): TeamStatusService {
@@ -21,12 +21,10 @@ export function storageAccountTeamStatusService(): TeamStatusService {
     return result.data;
   };
 
-  return { getStatus };
+  return { getStatus, updateStatus: () => Promise.resolve() };
 }
 
 // ---- Helpers ---- //
-
-// ------ Helpers - blobs ------ //
 
 interface BlobClient {
   getContent: () => Promise<string>;
@@ -71,14 +69,3 @@ async function streamToText(readable: NodeJS.ReadableStream): Promise<string> {
   }
   return data;
 }
-
-// ------ Helpers - parsing  ------ //
-
-const teamMateStatusSchema = z.object({
-  name: z.string(),
-  isOnline: z.boolean(),
-});
-
-const teamStatusSchema = z.object({
-  teamMates: z.array(teamMateStatusSchema),
-});
