@@ -1,7 +1,7 @@
 import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { teamStatusSchema } from "../models/teamStatus";
-import { GetStatus, TeamStatusService } from "./types";
+import { GetStatus, TeamStatus, TeamStatusService } from "./types";
 
 export function storageAccountTeamStatusService(): TeamStatusService {
   const client = blobClient({
@@ -21,13 +21,18 @@ export function storageAccountTeamStatusService(): TeamStatusService {
     return result.data;
   };
 
-  return { getStatus, updateStatus: () => Promise.resolve() };
+  async function updateStatus(status: TeamStatus): Promise<void> {
+    await client.updateContent(JSON.stringify(status));
+  }
+
+  return { getStatus, updateStatus };
 }
 
 // ---- Helpers ---- //
 
 interface BlobClient {
   getContent: () => Promise<string>;
+  updateContent: (content: string) => Promise<void>;
 }
 
 interface BlobClientOptions {
@@ -58,7 +63,11 @@ function blobClient({ url, container, blob }: BlobClientOptions): BlobClient {
     return content;
   }
 
-  return { getContent };
+  async function updateContent(content: string): Promise<void> {
+    await blockBlobClient.upload(content, content.length);
+  }
+
+  return { getContent, updateContent };
 }
 
 async function streamToText(readable: NodeJS.ReadableStream): Promise<string> {
