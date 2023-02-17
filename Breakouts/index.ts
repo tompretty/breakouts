@@ -20,7 +20,7 @@ export const getFunction = ({ statusService }: FunctionProps) => {
     const formattedGroups = formatGroups(groups);
 
     context.res = {
-      status: 200,
+      headers: { "Content-Type": "application/json" },
       body: { groups, formattedGroups },
     };
   };
