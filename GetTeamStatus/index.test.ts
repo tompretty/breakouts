@@ -12,7 +12,7 @@ describe("GetTeamStatus", () => {
     await func(context as any, context.req);
 
     expect(context.res.body).toEqual({
-      status: { teamMates: [{ name: "Tom P", isOnline: true }] },
+      teamMates: [{ name: "Tom P", isOnline: true }],
     });
   });
 });

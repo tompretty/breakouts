@@ -2,6 +2,7 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { teamStatusSchema } from "../shared/models/teamStatus";
 import { inMemoryTeamStatusService } from "../shared/statusService/inMemory";
 import { lazyTeamStatusService } from "../shared/statusService/lazy";
+import { sharedInMemoryTeamStatusService } from "../shared/statusService/sharedInMemory";
 import { storageAccountTeamStatusService } from "../shared/statusService/storageAccount";
 import { TeamStatusService } from "../shared/statusService/types";
 
@@ -40,8 +41,12 @@ export const getFunction = ({ statusService }: FunctionProps) => {
 // ---- Helpers ---- //
 
 const getStatusService = () => {
-  if (process.env.USE_STORAGE_ACCOUNT_STATUS_SERVICE) {
+  if (process.env.STATUS_SERVICE_TYPE === "STORAGE_ACCOUNT") {
     return storageAccountTeamStatusService();
+  }
+
+  if (process.env.STATUS_SERVICE_TYPE === "SHARED_IN_MEMORY") {
+    return sharedInMemoryTeamStatusService();
   }
 
   return inMemoryTeamStatusService([
