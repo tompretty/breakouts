@@ -4,36 +4,53 @@ import { inMemoryTeamStatusService } from "../shared/statusService/inMemory";
 import { storageAccountTeamStatusService } from "../shared/statusService/storageAccount";
 import { TeamStatusService } from "../shared/statusService/types";
 
-let statusService: TeamStatusService | null = null;
+// ---- Types ---- //
 
-const httpTrigger: AzureFunction = async function (
-  context: Context,
-  req: HttpRequest
-): Promise<void> {
-  if (!statusService) {
-    statusService = getStatusService();
-  }
+interface FunctionProps {
+  getStatusService: GetStatusService;
+}
 
-  const result = teamStatusSchema.safeParse(req.body);
+export type GetStatusService = () => TeamStatusService;
 
-  if (!result.success) {
+// ---- Function getter ---- //
+
+export const getFunction = ({ getStatusService }: FunctionProps) => {
+  let statusService: TeamStatusService | null = null;
+
+  const httpTrigger: AzureFunction = async function (
+    context: Context,
+    req: HttpRequest
+  ): Promise<void> {
+    if (!statusService) {
+      statusService = getStatusService();
+    }
+
+    const result = teamStatusSchema.safeParse(req.body);
+
+    if (!result.success) {
+      context.res = {
+        status: 400,
+      };
+      return;
+    }
+
+    await statusService.updateStatus(result.data);
+
     context.res = {
-      status: 400,
+      status: 204,
     };
-    return;
-  }
-
-  await statusService.updateStatus(result.data);
-
-  context.res = {
-    status: 204,
   };
+
+  return httpTrigger;
 };
 
-const getStatusService = (): TeamStatusService => {
+// ---- Helpers ---- //
+
+const getStatusService: GetStatusService = () => {
   if (process.env.USE_STORAGE_ACCOUNT_STATUS_SERVICE) {
     return storageAccountTeamStatusService();
   }
+
   return inMemoryTeamStatusService([
     "Andrew",
     "Mihai",
@@ -43,5 +60,9 @@ const getStatusService = (): TeamStatusService => {
     "Jeet",
   ]);
 };
+
+// ---- Function export ---- //
+
+const httpTrigger = getFunction({ getStatusService });
 
 export default httpTrigger;
