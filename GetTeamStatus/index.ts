@@ -3,26 +3,43 @@ import { inMemoryTeamStatusService } from "../shared/statusService/inMemory";
 import { storageAccountTeamStatusService } from "../shared/statusService/storageAccount";
 import { TeamStatusService } from "../shared/statusService/types";
 
-let statusService: TeamStatusService | null = null;
+// ---- Types ---- //
 
-const httpTrigger: AzureFunction = async (
-  context: Context,
-  req: HttpRequest
-): Promise<void> => {
-  if (!statusService) {
-    statusService = getStatusService();
-  }
+interface FunctionProps {
+  getStatusService: GetStatusService;
+}
 
-  context.res = {
-    headers: { "Content-Type": "application/json" },
-    body: { status: await statusService.getStatus() },
+export type GetStatusService = () => TeamStatusService;
+
+// ---- Function getter ---- //
+
+export const getFunction = ({ getStatusService }: FunctionProps) => {
+  let statusService: TeamStatusService | null = null;
+
+  const httpTrigger: AzureFunction = async (
+    context: Context,
+    req: HttpRequest
+  ): Promise<void> => {
+    if (!statusService) {
+      statusService = getStatusService();
+    }
+
+    context.res = {
+      headers: { "Content-Type": "application/json" },
+      body: { status: await statusService.getStatus() },
+    };
   };
+
+  return httpTrigger;
 };
+
+// ---- Helpers ---- //
 
 const getStatusService = (): TeamStatusService => {
   if (process.env.USE_STORAGE_ACCOUNT_STATUS_SERVICE) {
     return storageAccountTeamStatusService();
   }
+
   return inMemoryTeamStatusService([
     "Andrew",
     "Mihai",
@@ -33,4 +50,6 @@ const getStatusService = (): TeamStatusService => {
   ]);
 };
 
-export default httpTrigger;
+// ---- Function export ---- //
+
+export const run = getFunction({ getStatusService });

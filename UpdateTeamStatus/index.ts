@@ -63,6 +63,4 @@ const getStatusService: GetStatusService = () => {
 
 // ---- Function export ---- //
 
-const httpTrigger = getFunction({ getStatusService });
-
-export default httpTrigger;
+export const run = getFunction({ getStatusService });
