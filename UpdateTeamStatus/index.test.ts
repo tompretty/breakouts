@@ -1,6 +1,7 @@
 import { getFunction } from "./index";
 import { TestContext } from "@anthonychu/azure-functions-test-utils";
 import { inMemoryTeamStatusService } from "../shared/statusService/inMemory";
+import { TeamStatus } from "../shared/statusService/types";
 
 describe("UpdateTeamStatus", () => {
   const statusService = inMemoryTeamStatusService(["Tom P", "Tom S", "Tom Z"]);
@@ -35,6 +36,18 @@ describe("UpdateTeamStatus", () => {
     context.req.body = {
       foo: "bar",
     };
+
+    await func(context as any, context.req);
+
+    expect(context.res.status).toEqual(400);
+  });
+
+  it("rejects a body that alters the list of teammates", async () => {
+    const status = await statusService.getStatus();
+    const updatedStatus: TeamStatus = { teamMates: status.teamMates.slice(1) };
+
+    const context = new TestContext();
+    context.req.body = updatedStatus;
 
     await func(context as any, context.req);
 

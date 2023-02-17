@@ -5,6 +5,7 @@ import { lazyTeamStatusService } from "../shared/statusService/lazy";
 import { sharedInMemoryTeamStatusService } from "../shared/statusService/sharedInMemory";
 import { storageAccountTeamStatusService } from "../shared/statusService/storageAccount";
 import { TeamStatusService } from "../shared/statusService/types";
+import { hasAlteredListOfTeammates } from "./validation";
 
 // ---- Types ---- //
 
@@ -22,6 +23,16 @@ export const getFunction = ({ statusService }: FunctionProps) => {
     const result = teamStatusSchema.safeParse(req.body);
 
     if (!result.success) {
+      context.res = {
+        status: 400,
+      };
+      return;
+    }
+
+    const oldStatus = await statusService.getStatus();
+    const newStatus = result.data;
+
+    if (hasAlteredListOfTeammates(oldStatus, newStatus)) {
       context.res = {
         status: 400,
       };
