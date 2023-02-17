@@ -1,6 +1,8 @@
 import { FuncCli } from "@anthonychu/azure-functions-test-utils";
 import { TeamStatus } from "../shared/statusService/types";
 
+jest.setTimeout(30000);
+
 describe("Update", () => {
   let funcCli: FuncCli;
 
