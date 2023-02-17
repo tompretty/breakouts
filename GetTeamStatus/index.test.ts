@@ -1,12 +1,10 @@
-import { getFunction, GetStatusService } from "./index";
+import { getFunction } from "./index";
 import { TestContext } from "@anthonychu/azure-functions-test-utils";
 import { inMemoryTeamStatusService } from "../shared/statusService/inMemory";
 
 describe("GetTeamStatus", () => {
-  const getStatusService: GetStatusService = () =>
-    inMemoryTeamStatusService(["Tom P"]);
-
-  const func = getFunction({ getStatusService });
+  const statusService = inMemoryTeamStatusService(["Tom P"]);
+  const func = getFunction({ statusService });
 
   it("returns the team status", async () => {
     const context = new TestContext();

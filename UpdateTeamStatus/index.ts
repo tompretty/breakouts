@@ -1,30 +1,23 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { teamStatusSchema } from "../shared/models/teamStatus";
 import { inMemoryTeamStatusService } from "../shared/statusService/inMemory";
+import { lazyTeamStatusService } from "../shared/statusService/lazy";
 import { storageAccountTeamStatusService } from "../shared/statusService/storageAccount";
 import { TeamStatusService } from "../shared/statusService/types";
 
 // ---- Types ---- //
 
 interface FunctionProps {
-  getStatusService: GetStatusService;
+  statusService: TeamStatusService;
 }
-
-export type GetStatusService = () => TeamStatusService;
 
 // ---- Function getter ---- //
 
-export const getFunction = ({ getStatusService }: FunctionProps) => {
-  let statusService: TeamStatusService | null = null;
-
+export const getFunction = ({ statusService }: FunctionProps) => {
   const httpTrigger: AzureFunction = async function (
     context: Context,
     req: HttpRequest
   ): Promise<void> {
-    if (!statusService) {
-      statusService = getStatusService();
-    }
-
     const result = teamStatusSchema.safeParse(req.body);
 
     if (!result.success) {
@@ -46,7 +39,7 @@ export const getFunction = ({ getStatusService }: FunctionProps) => {
 
 // ---- Helpers ---- //
 
-const getStatusService: GetStatusService = () => {
+const getStatusService = () => {
   if (process.env.USE_STORAGE_ACCOUNT_STATUS_SERVICE) {
     return storageAccountTeamStatusService();
   }
@@ -63,4 +56,6 @@ const getStatusService: GetStatusService = () => {
 
 // ---- Function export ---- //
 
-export const run = getFunction({ getStatusService });
+export const run = getFunction({
+  statusService: lazyTeamStatusService(getStatusService),
+});
