@@ -1,34 +1,39 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
+import { FunctionProps, statusService } from "../shared/initialization";
+import { TeamStatus } from "../shared/statusService/types";
 import { formatGroups } from "./format";
 import { getGroups } from "./groups";
 
-const httpTrigger: AzureFunction = async function (
-  context: Context,
-  req: HttpRequest
-): Promise<void> {
-  context.log("HTTP trigger function processed a request.");
+// ---- Function getter ---- //
 
-  const groups = getGroups(PEOPLE);
+export const getFunction = ({ statusService }: FunctionProps) => {
+  const httpTrigger: AzureFunction = async function (
+    context: Context,
+    req: HttpRequest
+  ): Promise<void> {
+    const status = await statusService.getStatus();
 
-  const formattedGroups = formatGroups(groups);
+    const people = getOnlineTeammates(status);
 
-  context.res = {
-    status: 200,
-    body: { groups, formattedGroups },
+    const groups = getGroups(people);
+
+    const formattedGroups = formatGroups(groups);
+
+    context.res = {
+      status: 200,
+      body: { groups, formattedGroups },
+    };
   };
+
+  return httpTrigger;
 };
 
-const PEOPLE = [
-  "Tom P",
-  "Tom Z",
-  "Tom S",
-  "Rafael",
-  "Andrew",
-  "Ollie",
-  "Jeet",
-  "Matthew",
-  "Nick",
-  "Mihai",
-];
+// ---- Function export ---- //
 
-export default httpTrigger;
+export const run = getFunction({ statusService });
+
+// ---- Helpers ---- //
+
+export function getOnlineTeammates(status: TeamStatus): string[] {
+  return status.teamMates.filter((tm) => tm.isOnline).map((tm) => tm.name);
+}
